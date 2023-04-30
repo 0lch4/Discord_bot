@@ -15,7 +15,7 @@ token_headers = {
 
 response = requests.post(token_url, data=token_data, headers=token_headers)
 print("Oto dostępne gatunki:")
-with open('gatunek.json') as f:
+with open('polecenie_muzyki\gatunek.json') as f:
     genre = json.load(f)
     
 genre = genre.lower()
