@@ -5,10 +5,10 @@ import time
 
 print("Im więcej będziesz mnie używać tym wyniki bedą lepsze :)")
 time.sleep(0.5)
-with open('wynik2.json') as f:
+with open('wyniki\wynik2.json') as f:
     data = json.load(f)
     
-model = tf.keras.models.load_model('C:\Repositories\discord_bot\polecenie_muzyki\podobienstwo_piosenek.h5')
+model = tf.keras.models.load_model('polecenie_muzyki\podobienstwo_piosenek.h5')
 
 X = np.array([[data['tempo'], data['valence'], data['loudness'],
              data['energy'], data['time_signature'],data['danceability'],data['speechiness'],data['mode'],data['key'],data['instrumentalness'],data['popularity']] for i in range(len(data))])
@@ -36,7 +36,7 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 
 model.fit(X_norm, Y, epochs=120, batch_size=16)
 
-model.save('podobienstwo_piosenek.h5')
+model.save('polecenie_muzyki\podobienstwo_piosenek.h5')
 
 results = []
 for i in range(len(X)):
@@ -59,5 +59,5 @@ results_dict = {
 }
 
 
-with open('wynik3.json', 'w') as f:
+with open('wyniki\wynik3.json', 'w') as f:
     json.dump(results_dict, f, indent=2, ensure_ascii=False)

@@ -22,7 +22,7 @@ genre = genre.lower()
 
 if response.status_code == 200:
     access_token = response.json()['access_token']
-    with open('wynik3.json') as f:
+    with open('wyniki\wynik3.json') as f:
         new_data = json.load(f)
        
     tempo = new_data['tempo']
@@ -82,7 +82,7 @@ if response.status_code == 200:
                 "wykonawca": track['artists'][0]['name'],
                 "link": track['external_urls']['spotify']}
                 tracks_info.append(track_info)
-                with open('wynik4.json','w', encoding='utf-8') as f:
+                with open('wyniki\wynik4.json','w', encoding='utf-8') as f:
                     json.dump(tracks_info, f, indent=4)
                     
     else:

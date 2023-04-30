@@ -138,17 +138,17 @@ async def on_message(message):
         tytul = message.content.lower().split('polec cos podobnego do ')[1]
         
         #zapisuje piosenke  do pliku wynik.json   
-        with open('wynik.json','w',encoding='utf-8') as f:
+        with open('wyniki\wynik.json','w',encoding='utf-8') as f:
             json.dump(tytul,f, indent=2, ensure_ascii=False)    
             
         #uruchamia aplikacje do pozyskania linku i parametrow utworu   
-        subprocess.run(["python", "C:\Repositories\discord_bot\polecenie_muzyki\pobranie_piosenki.py"])
+        subprocess.run(["python", "polecenie_muzyki\pobranie_piosenki.py"])
         
         #jesli sie to powiedzie bot informuje na czacie ze mysli    
         await message.channel.send("dobra mysle czaj")
         
         #uruchamia aplikacje z siecia neuronowa ktora przetwarza dane o utworze i dobiera parametry aby dac podobny
-        subprocess.run(["python", "C:\Repositories\discord_bot\polecenie_muzyki\AI.py"])
+        subprocess.run(["python", "polecenie_muzyki\AI.py"])
         
         #pyta uzytkownika o wybranie gatunku muzycznego, ktory chce otrzymac i wypisuje dostepne
         await message.channel.send("dobra a gatunek jaki chcesz miec? masz do wyboru:")
@@ -165,10 +165,10 @@ async def on_message(message):
                 json.dump(user_message.content,f, indent=2, ensure_ascii=False)
                 
         #uruchamia aplikacje ktora wysyla nowe dane do spotify i pobiera odpowiednie piosenki       
-        subprocess.run(["python", "C:\Repositories\discord_bot\polecenie_muzyki\zwrócenie_piosenki.py"])
+        subprocess.run(["python", "polecenie_muzyki\zwrócenie_piosenki.py"])
         
         #odczytuje 3 najbardzije pasujace piosenki z wynik4.json i wyswietla na kanale
-        with open('wynik4.json','r',encoding='utf-8') as f:
+        with open('wyniki\wynik4.json','r',encoding='utf-8') as f:
                 polecane = json.load(f)
                 miejsce = 1
         for polecenie in polecane:
