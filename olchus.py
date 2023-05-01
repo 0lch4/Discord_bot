@@ -49,7 +49,7 @@ async def on_ready():
 
 #komenda testowa aby sprawdzic czy bot dziala, po napisaniu !test powinien wyswietlic test
 @bot.command(name='test')
-async def hello(ctx):
+async def test(ctx):
     await ctx.send('test')
 
 #obsluga polecen, mozna dodawac tutaj swoje
@@ -58,7 +58,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
-    #obsluga tekstowa
+#wbudowana obsluga tekstowa
     
     '''fragment odpowiedzialny za powitanie
        po napisaniu slowa z listy powitanie oraz slowa z listy olchus_list np hej olchus bot przywita sie z nami'''
@@ -85,7 +85,48 @@ async def on_message(message):
     if any(message.content.lower().startswith(f'{i} super jestes') for i in olchus_list):
         await message.channel.send('jak moj tworca')
     
-    #obsluga muzyczna
+#nauka nowych wypowiedzi
+    
+    '''fragment kodu ktory umozliwia uczenia bota nowych fraz
+       gdy podamy slowo z listy olchus_list i napiszemy czas na nauke 
+       bot spyta sie na co ma reagowac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej reakcja
+       nastepnie bot sie spyta jak ma odpowiadac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej odpowiedz
+    '''
+    if any(message.content.lower().startswith(f'{i} czas na nauke') for i in olchus_list):
+        await message.channel.send("na co mam reagować?")
+        reakcja = await bot.wait_for('message', check=lambda m: m.author == message.author)
+        await message.channel.send("jak mam odpowiadać?")
+        odpowiedz = await bot.wait_for('message', check=lambda m: m.author == message.author)
+
+        # bot otwiera swoj zbior danych
+        with open('nauka.json', 'r', encoding='utf-8') as f:
+            dane = json.load(f)
+        
+        #utworzenie slownika gdzie do slow na ktore ma reagowac jest przypisana odpowiedz    
+        interakcja = {reakcja.content: odpowiedz.content}
+            
+        '''bot sprawdza czy klucz na ktory ma reagowac jest w jego zbiorze danych
+        jesli jest odpowiada nam ze wie co ma mowic
+        jesli nie ma zapisuje nam slowa na ktore ma reagowac i odpowiedz na nia do pliku nauka'''
+        if not any(i == interakcja for i in dane):
+            dane.append(interakcja)
+            with open('nauka.json', 'w', encoding='utf-8') as f:
+                json.dump(dane, f, ensure_ascii=False, indent=4)
+            await message.channel.send("dobra zapamiętałem.")
+        else:
+            await message.channel.send("juz wiem co mam na to odpowiedziec")
+                    
+    '''po napisaniu ej i slowa z listy olchus list a nastepnie dowolnych slow bot sprawdzi czy umie na nie odpowiedziec
+       jesli nie to nic sie nie dzieje jesli tak to odpowie nam'''        
+    if any(message.content.lower().startswith(f'ej {i}') for i in olchus_list):
+        polecenie = message.content[10:]
+        with open('nauka.json', 'r', encoding='utf-8') as f:
+            nauka = json.load(f)
+        for i in nauka:
+            if polecenie in i:
+                 await message.channel.send(i[polecenie])
+   
+#obsluga muzyczna
     
     '''fragment odpowiedzialny za wyszukiwanie piosenek na spotify
        po podaniu tytulu i wykonawcy lub tytulu wyszuka i odtworzy piosenke
@@ -128,7 +169,7 @@ async def on_message(message):
             vc.play(FFmpegPCMAudio(audio_url+"&play=true", executable="ffmpeg.exe", options="-vn"))
         else:
             #jesli szukany rezultat nie istnieje informuje o tym
-            await message.channel.send("nie widze takiej")
+            await message.channel.send('nie widze takiej')
 
     '''fragment odpowiedzialny za polecanie piosenki na podstawie jednej podanej
        ta funkcja korzysta z innej aplikacji do polecania muzyki ktora dostosowalem do potrzeb bota'''
@@ -151,13 +192,13 @@ async def on_message(message):
         subprocess.run(["python", "polecenie_muzyki\AI.py"])
         
         #pyta uzytkownika o wybranie gatunku muzycznego, ktory chce otrzymac i wypisuje dostepne
-        await message.channel.send("dobra a gatunek jaki chcesz miec? masz do wyboru:")
+        await message.channel.send('dobra a gatunek jaki chcesz miec? masz do wyboru:')
         with open('polecenie_muzyki\gatunki.txt') as f:
                 for gatunek in f:
                     await message.channel.send(gatunek)
                     
         #informuje ze w przypadku blednych danych da ostatnie wyniki
-        await message.channel.send("jak jakis smieszek da inny niz z listy albo nieistniejaca piosenke dam jakies stare i tyle xD")
+        await message.channel.send('jak jakis smieszek da inny niz z listy albo nieistniejaca piosenke dam jakies stare i tyle xD')
         
         #zapisuje ostatnia wiadomosc uzytkownika do zmiennej i nastepnie zapisuje ja do pliku gatunek.json                             
         user_message = await bot.wait_for('message', check=lambda m: m.author == message.author)
@@ -178,7 +219,7 @@ async def on_message(message):
                 await message.channel.send(f"Miejsce: {miejsce}\n{tytul} - {wykonawca}\n{link}")
                 miejsce+=1
                 
-    #obsluga uzytkownikow
+#obsluga uzytkownikow
     
     '''po napisaniu wyjeb oraz nazwy uzytkownika  uzytkownik jest usuwany z serwera
        gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''    
@@ -190,7 +231,7 @@ async def on_message(message):
             await message.channel.send(f'{kasacja} juz nie bedzie sprawial problemow')
         else:
             await message.channel.send(f'Nie widze {kasacja}')
-    
+
     #sprawdza czy wiadomosc zawiera komende dla bota
     await bot.process_commands(message)
     
