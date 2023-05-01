@@ -116,14 +116,20 @@ async def on_message(message):
             await message.channel.send("juz wiem co mam na to odpowiedziec")
                     
     '''po napisaniu ej i slowa z listy olchus list a nastepnie dowolnych slow bot sprawdzi czy umie na nie odpowiedziec
-       jesli nie to nic sie nie dzieje jesli tak to odpowie nam'''        
+       jesli nie to poinformuje nas o tym jesli tak to odpowie nam
+       flaga czy_jest sprawdza czy takie slowo jest w bazie'''       
+    czy_jest = False        
     if any(message.content.lower().startswith(f'ej {i}') for i in olchus_list):
         polecenie = message.content[10:]
         with open('nauka.json', 'r', encoding='utf-8') as f:
             nauka = json.load(f)
         for i in nauka:
             if polecenie in i:
-                 await message.channel.send(i[polecenie])
+                czy_jest = True
+                await message.channel.send(i[polecenie])
+        
+        if czy_jest == False:
+            await message.channel.send('nie umiem nic takiego ale mozesz mnie nauczyc')
     
     '''fragment ktory umozliwa oduczcenia czegos bota
     po napisaniu slowa z olchus list i napisaniu zapomnij o usuwa klucz ze swojej bazy
