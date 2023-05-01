@@ -85,13 +85,12 @@ async def on_message(message):
     if any(message.content.lower().startswith(f'{i} super jestes') for i in olchus_list):
         await message.channel.send('jak moj tworca')
     
-#nauka nowych wypowiedzi
+#nauka
     
     '''fragment kodu ktory umozliwia uczenia bota nowych fraz
        gdy podamy slowo z listy olchus_list i napiszemy czas na nauke 
        bot spyta sie na co ma reagowac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej reakcja
-       nastepnie bot sie spyta jak ma odpowiadac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej odpowiedz
-    '''
+       nastepnie bot sie spyta jak ma odpowiadac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej odpowiedz'''
     if any(message.content.lower().startswith(f'{i} czas na nauke') for i in olchus_list):
         await message.channel.send("na co mam reagować?")
         reakcja = await bot.wait_for('message', check=lambda m: m.author == message.author)
@@ -112,7 +111,7 @@ async def on_message(message):
             dane.append(interakcja)
             with open('nauka.json', 'w', encoding='utf-8') as f:
                 json.dump(dane, f, ensure_ascii=False, indent=4)
-            await message.channel.send("dobra zapamiętałem.")
+            await message.channel.send("dobra zapamiętałem")
         else:
             await message.channel.send("juz wiem co mam na to odpowiedziec")
                     
@@ -125,7 +124,30 @@ async def on_message(message):
         for i in nauka:
             if polecenie in i:
                  await message.channel.send(i[polecenie])
-   
+    
+    '''fragment ktory umozliwa oduczcenia czegos bota
+    po napisaniu slowa z olchus list i napisaniu zapomnij o usuwa klucz ze swojej bazy
+    i informuje nas ze o tym zapomina 
+    jesli nie ma takiego klucza poinformuje nas o tym
+    gdy kazemu mu zapomniec o jakims slowie nie bedzie juz na nie reagowal
+    flaga bylo sprawdza czy takie slowo bylo w bazie'''
+    bylo = False             
+    if message.content.lower().startswith(tuple(f'{i} zapomnij o ' for i in olchus_list)):
+        zapomnij = message.content.lower().split('zapomnij o ')[1]
+        with open('nauka.json', 'r', encoding='utf-8') as f:
+            zapomnienie = json.load(f)
+        for i in zapomnienie:
+            if zapomnij in i:
+                bylo=True
+                i.pop(zapomnij)
+                await message.channel.send("no to zapominam")
+        if bylo == False:     
+            await message.channel.send('ja nawet nic takiego nie umiem xD')
+        #zapisuje zmienione dane lub pozostawia stare dane jesli nie mial takiego klucza        
+        with open('nauka.json', 'w', encoding='utf-8') as f:
+            json.dump(zapomnienie, f, ensure_ascii=False, indent=4)
+                 
+                 
 #obsluga muzyczna
     
     '''fragment odpowiedzialny za wyszukiwanie piosenek na spotify
@@ -159,10 +181,10 @@ async def on_message(message):
             muzyka moze byc puszczona tylko na kanale gdzie on sie znajduje
             jesli bota nie ma na kanale to go dodaje i odtwarza on piosenke
             jesli bot jest juz na kanale to go rozlaczai odrazu dodaje i odtwarza on piosenke'''
-            channel = message.author.voice.channel
             if not message.author.voice:
                 await message.channel.send('ale na kanal pierw wejdz')
-                return    
+                return
+            channel = message.author.voice.channel    
             if message.guild.voice_client:
                 await message.guild.voice_client.disconnect()
             vc = await channel.connect(reconnect=True, timeout=10.0)
