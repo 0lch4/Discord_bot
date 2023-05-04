@@ -6,7 +6,8 @@ from spotipy.oauth2 import SpotifyOAuth
 from discord import FFmpegPCMAudio
 import subprocess
 import json
-
+import requests
+from bs4 import BeautifulSoup
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -84,7 +85,17 @@ async def on_message(message):
        gdy ktos pochwali bota bot chwali autora za pomysl i sporo poswieconego czasu'''
     if any(message.content.lower().startswith(f'{i} super jestes') for i in olchus_list):
         await message.channel.send('jak moj tworca')
-    
+        
+    '''fragment kodu odpowiedzialny za wyswietlanie aktualenj temperatury,
+        wyswietla temperature w twoim miescie, w moim przypadku jest ustawione na Milicz
+        pobieranie temperatury polega na parsowaniu strony interii'''
+    if any(message.content.lower().startswith(f'{i} ile dzisiaj stopni w miliczu') for i in olchus_list):
+        pogoda = requests.get(f'https://pogoda.interia.pl/prognoza-szczegolowa-milicz,cId,21375')
+        soup = BeautifulSoup(pogoda.text,'lxml')
+        milicz = soup.select('.weather-currently-temp-strict')[0]
+        await message.channel.send(f'na naszym ulubionym zadupiu jest dzis {milicz.text}')
+        
+
 #nauka
     
     '''fragment kodu ktory umozliwia uczenia bota nowych fraz
@@ -268,4 +279,5 @@ bot.run('MTEwMTQ3MTc3NjEzNzAzMTgzMA.GwYNH1.9dCbPGiNEEtpzbiMxmyinM1dLX7jD1lmzOP1C
 
 
 
-
+pogoda = requests.get('https://pogoda.interia.pl/prognoza-szczegolowa-milicz,cId,21375')
+print(pogoda.status_code)
