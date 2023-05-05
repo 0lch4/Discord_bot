@@ -2,29 +2,30 @@ import os
 import requests
 import base64
 import json
+from dotenv import load_dotenv
 
-# wpisz tutaj zmienne srodowiskowe ktore przechowuja id klienta i sekret na api spotify
-client_id = os.environ.get('Spotify_client_id')
-client_secret = os.environ.get('Spotify_client_secret')
+load_dotenv()
+client_id = os.getenv('SPOTIFY_ID')
+client_secret = os.getenv('SPOTIFY_SECRET')
 
+#polaczenie ze spotify
 token_url = "https://accounts.spotify.com/api/token"
 token_data = {
     "grant_type": "client_credentials"}
 token_headers = {
     "Authorization": f"Basic {base64.b64encode((client_id + ':' + client_secret).encode('ascii')).decode('ascii')}"}
-
 response = requests.post(token_url, data=token_data, headers=token_headers)
-print("Oto dostępne gatunki:")
-with open('polecenie_muzyki\gatunek.json') as f:
-    genre = json.load(f)
-    
-genre = genre.lower()
 
+#laduje wybrany gatunek
+with open('polecenie_muzyki\gatunek.json','r') as f:
+    genre = json.load(f)    
+genre = genre.lower()
+#laduje nowe dane utworu
 if response.status_code == 200:
     access_token = response.json()['access_token']
-    with open('wyniki\wynik3.json') as f:
+    with open('wyniki\wynik3.json','r') as f:
         new_data = json.load(f)
-       
+    #przypisuje wlasciwosci piosenki do zmiennych   
     tempo = new_data['tempo']
     loudness = new_data['loudness']
     valence = new_data['valence']
@@ -40,7 +41,7 @@ if response.status_code == 200:
     headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"}
-
+    #tworzy parametry ktore sa odczytywane przez strone
     params = {
         'limit': 3,
         'market': 'PL',
@@ -59,21 +60,15 @@ if response.status_code == 200:
         'popularity':popularity,
         'type': 'track',
     }
+    #wysyla zapytanie o piosenke z podanymi parametrami
     response = requests.get("https://api.spotify.com/v1/recommendations", headers=headers, params=params, verify=True)
     if response.status_code == 200:
-        results = response.json()["tracks"]
         wyniki = response.json()["tracks"]
-        if len(results) == 0:
-            print("Nie znaleziono utworów dla podanych parametrów wyszukiwania.")
+        #sprawdza czy taka piosenka istnieje
+        if len(wyniki) == 0:
             quit()
         else:
             i=1
-            for track in results:
-                print(f"\nMiejsce {i}")
-                print(f"Utwór: {track['name']}")
-                print(f"Wykonawca: {track['artists'][0]['name']}")
-                print(f"Link do utworu: {track['external_urls']['spotify']}")
-                i+=1
             tracks_info=[]
             for track in wyniki: 
                 track_info = {
@@ -82,8 +77,10 @@ if response.status_code == 200:
                 "wykonawca": track['artists'][0]['name'],
                 "link": track['external_urls']['spotify']}
                 tracks_info.append(track_info)
-                with open('wyniki\wynik4.json','w', encoding='utf-8') as f:
-                    json.dump(tracks_info, f, indent=4)
+                i+=1
+                #zapisuje do pliku wynik4.json
+            with open('wyniki\wynik4.json','w', encoding='utf-8') as f:
+                json.dump(tracks_info, f, indent=4)
                     
     else:
         print(f"Nie udało się uzyskać wyników wyszukiwania. Kod statusu: {response.status_code}")

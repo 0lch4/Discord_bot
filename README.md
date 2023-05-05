@@ -1,31 +1,32 @@
 # discord_bot
 
-programy: 
+![GitHub forks](https://img.shields.io/badge/Version-1.4-red)
 
-ffmpeg https://ffmpeg.org/download.html (nalezy dodac do path)
+Instalacja bibliotek:
 
-biblioteki: 
 
-pip install requests
+pip install -r requirements.txt
 
-pip inatall numpy
 
-pip install tensorflow
+Wymagane api keye znajdują się w pliku .env.example
+należy utworzyć plik .env i podać tam swoje klucze według wzoru
 
-pip install pybase64
 
-pip install spotdl
+Bot w moim przypadku reaguje na olchus, bo tak go nazwalem. Aby zmienic slowa na ktore reaguje
+należy edytować linie 49 'bot_name_list = ['olchus','olchuś']' i wprowadzic tam swoją nazwe bota
 
-pip install spotipy
 
-pip install discord
+Bot posiada:
+pare wbudowanych komend tekstowych
+możliwość uruchomienia piosenki na spotify
+możliwość polecenia piosenki na spotify
+możliwość wyrzucenia użytkownika z serwera
+prosty model nauki, gdy powiemy mu co ma pisać na dane słowa będzie to robił
+możliwość aby bot zapomniał nauczonych go rzeczy
+podaje aktualną pogodę w podanym mieście
 
-wymagane api:
 
-spotify_secret
+komendy można zobaczyć wpisując !pomocy
 
-spotify_client
-
-discord token
 
 
