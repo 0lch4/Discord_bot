@@ -8,12 +8,17 @@ import subprocess
 import json
 import requests
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-client_id = '7d86accdaa2745c8883da921deac3dde'
-client_secret = '06d0ba0d732c4144920b8bb87407e41b'
+bot_token = os.getenv('BOT_TOKEN') 
+client_id = os.getenv('SPOTIFY_ID')
+client_secret = os.getenv('SPOTIFY_SECRET')
 redirect_uri = "http://localhost:8000"
 scope = "user-library-read,user-modify-playback-state,user-read-playback-state"
 
@@ -23,8 +28,8 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=client_id, client_secre
 listy z zawartoscia
 zmienna imie_dziewczyny przechowuje imie naszej dziewczyny
 1 uwzgledniajaca literowki zdania kto jest najpiekniejszy na swiecie, zrobilem aby mojej dziewczynie bylo milo mozna zedytowac pod siebie
-2 zawiera slowa ktore bot napisze po napisaniu olchus i jednego slowa z tej listy
-3 uwzglednia olchus z polskim znakiem i bez
+2 zawiera slowa ktore bot napisze po napisaniu olchus i jednego slowa z listy powitanie_list
+3 uwzglednia na co bot ma reagowac, w moim przypadku reaguje na swoją nazwe(nazwalem go olchus)
 4 zawiera liste piw, gdy spytasz sie bota jakie dzis wypic poda jedno z tych
 mozna tu tworzyc wlasne listy
 '''
@@ -40,7 +45,9 @@ piekna_list=['kto jest najpiekniejszy na swiecie?',
             'kto jest najpiękniejszy na swiecie'
             ]
 powitanie_list=['hej','czesc','siema','witaj','cześć','elo','hejka']
-olchus_list = ['olchus','olchuś']
+#w przypadku innej nazwy bota wystarczy zmodyfikowac ta liste
+bot_name_list = ['olchus','olchuś']
+
 browary_list = ['Żywiec', 'Tyskie', 'Lech', 'Okocim', 'Warka', 'Perła', 'Łomża', 'Książęce', 'Harnaś', 'Pilsner Urquell', 'Mocne Full', 'Wojak', 'Carlsberg', 'Kasztelan', 'Radler', 'Książęce','Redds', 'Zubr', 'Desperados','Corona','Piast']
 
 #napis pojawiajacy sie w konsoli, ma za zadanie poinformowac ze bot prawidlowo sie uruchomil
@@ -48,10 +55,22 @@ browary_list = ['Żywiec', 'Tyskie', 'Lech', 'Okocim', 'Warka', 'Perła', 'Łom�
 async def on_ready():
     print(f'Witaj mój stwórco to ja {bot.user} jestem gotów by ci służyć')
 
-#komenda testowa aby sprawdzic czy bot dziala, po napisaniu !test powinien wyswietlic test
-@bot.command(name='test')
-async def test(ctx):
-    await ctx.send('test')
+#komenda testowa aby pokazac dostepne opcje
+@bot.command(name='pomocy')
+async def pomocy(ctx):
+    await ctx.send(
+'''
+powitanie: slowo powitalne, nazwa bota
+komplement: nazwa bota, 'kto jest najpiekniejszy na swiecie'
+polecenie piwa: nazwa bota, 'jakiego browara dzis wypic '
+pogoda: nazwa bota, 'ile dzisiaj stopni w ', nazwa miejscowosci
+nauka: nazwa bota, ' czas na nauke'
+rozmowa z botem na podstawie wyuczoncych rzeczy: 'ej ', nazwa bota, polecenie
+oduczenie nauczonej rzeczy: nazwa bota, 'zapomnij o ' nazwa rzeczy na ktora reaguje
+wlaczenie muzyki ze spotify: nazwa bota, 'wlacz ',nazwa piosenki
+polecenie muzyki ze spotify: nazwa bota, 'polec cos podobnego do ', nazwa piosenki 
+wyrzucenie z kanalu" nazwa bota, 'wyrzuc ', nazwa uzytkownika
+''')
 
 #obsluga polecen, mozna dodawac tutaj swoje
 @bot.event
@@ -62,47 +81,45 @@ async def on_message(message):
 #wbudowana obsluga tekstowa
     
     '''fragment odpowiedzialny za powitanie
-       po napisaniu slowa z listy powitanie oraz slowa z listy olchus_list np hej olchus bot przywita sie z nami'''
-    if any(message.content.lower().startswith(p) for p in powitanie_list) and any(o in message.content.lower() for o in olchus_list):
+       po napisaniu slowa z listy powitanie oraz slowa z listy bot_name_list np hej olchus bot przywita sie z nami'''
+    if any(message.content.lower().startswith(p) for p in powitanie_list) and any(i in message.content.lower() for i in bot_name_list):
         await message.channel.send(random.choice(powitanie_list))
         
     '''fragment odpowiedzialny za prawienie komplementow naszej dziewczynie
-       po napisaniu slowa z listy piekna_ol_list bot zwroci wiadomosc ze jest ona najpiekniejsza'''
-    if any(i in message.content.lower() for i in piekna_list):
+       po napisaniu slowa z listy piekna_list bot zwroci wiadomosc ze jest ona najpiekniejsza'''
+    if any(message.content.lower().startswith(i) for i in bot_name_list) and any(p in message.content.lower() for p in piekna_list):
         await message.channel.send(f'Proste, że {imie_dziewczyny} <3')
         
     '''fragment odpowiedzialny za losowanie piwa, 
-       po napisaniu slowa z listy olchus oraz jakiego browara dzis wypic losuje piwo z listy browary_list'''    
-    if any(message.content.lower().startswith(f'{i} jakiego browara dzis wypic') for i in olchus_list): 
+       po napisaniu slowa z listy bot_name_list oraz jakiego browara dzis wypic losuje piwo z listy browary_list'''    
+    if any(message.content.lower().startswith(f'{i} jakiego browara dzis wypic') for i in bot_name_list): 
         await message.channel.send(f'dawaj wypij {random.choice(browary_list)}')  
-         
-    '''fragment odpowiedzialny za to ze, gdy spytamy bota czy pokaze co potrafi wyswietli napis no jasne
-       ma to za zadanie dac wieksze poczucie interaktywnosci'''
-    if any(message.content.lower().startswith(f'{i} pokazesz co umiesz?') for i in olchus_list):
-        await message.channel.send('no jasne')
         
     '''fragment kodu odpowiedzialny za chwalenie tworcy,
        gdy ktos pochwali bota bot chwali autora za pomysl i sporo poswieconego czasu'''
-    if any(message.content.lower().startswith(f'{i} super jestes') for i in olchus_list):
+    if any(message.content.lower().startswith(f'{i} super jestes') for i in bot_name_list):
         await message.channel.send('jak moj tworca')
         
     '''fragment kodu odpowiedzialny za wyswietlanie aktualenj temperatury,
         wyswietla temperature w twoim miescie, w moim przypadku jest ustawione na Milicz
-        pobieranie temperatury polega na parsowaniu strony interii'''
-    if any(message.content.lower().startswith(f'{i} ile dzisiaj stopni w miliczu') for i in olchus_list):
-        pogoda = requests.get(f'https://pogoda.interia.pl/prognoza-szczegolowa-milicz,cId,21375')
+        pobieranie temperatury nastepuje ze strony https://dobrapogoda24.pl/'''
+    if any(message.content.lower().startswith(f'{i} ile dzisiaj stopni w ') for i in bot_name_list):
+        miejscowosc = message.content.lower().split('ile dzisiaj stopni w ')[1]
+        pogoda = requests.get(f'https://dobrapogoda24.pl/pogoda/{miejscowosc}')
         soup = BeautifulSoup(pogoda.text,'lxml')
-        milicz = soup.select('.weather-currently-temp-strict')[0]
-        await message.channel.send(f'na naszym ulubionym zadupiu jest dzis {milicz.text}')
-        
+        try:
+            temperatura = soup.select('.tab_temp_max')[0]
+            await message.channel.send(f'w {miejscowosc} jest dzis {temperatura.text}')
+        except IndexError:
+            await message.channel.send('nie widze takiej miejscowosci')
 
 #nauka
     
     '''fragment kodu ktory umozliwia uczenia bota nowych fraz
-       gdy podamy slowo z listy olchus_list i napiszemy czas na nauke 
+       gdy podamy slowo z listy bot_name_list i napiszemy czas na nauke 
        bot spyta sie na co ma reagowac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej reakcja
        nastepnie bot sie spyta jak ma odpowiadac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej odpowiedz'''
-    if any(message.content.lower().startswith(f'{i} czas na nauke') for i in olchus_list):
+    if any(message.content.lower().startswith(f'{i} czas na nauke') for i in bot_name_list):
         await message.channel.send("na co mam reagować?")
         reakcja = await bot.wait_for('message', check=lambda m: m.author == message.author)
         await message.channel.send("jak mam odpowiadać?")
@@ -126,11 +143,11 @@ async def on_message(message):
         else:
             await message.channel.send("juz wiem co mam na to odpowiedziec")
                     
-    '''po napisaniu ej i slowa z listy olchus list a nastepnie dowolnych slow bot sprawdzi czy umie na nie odpowiedziec
+    '''po napisaniu ej i slowa z listy bot_name_list a nastepnie dowolnych slow bot sprawdzi czy umie na nie odpowiedziec
        jesli nie to poinformuje nas o tym jesli tak to odpowie nam
        flaga czy_jest sprawdza czy takie slowo jest w bazie'''       
     czy_jest = False        
-    if any(message.content.lower().startswith(f'ej {i}') for i in olchus_list):
+    if any(message.content.lower().startswith(f'ej {i}') for i in bot_name_list):
         polecenie = message.content[10:]
         with open('nauka.json', 'r', encoding='utf-8') as f:
             nauka = json.load(f)
@@ -143,13 +160,13 @@ async def on_message(message):
             await message.channel.send('nie umiem nic takiego ale mozesz mnie nauczyc')
     
     '''fragment ktory umozliwa oduczcenia czegos bota
-    po napisaniu slowa z olchus list i napisaniu zapomnij o usuwa klucz ze swojej bazy
+    po napisaniu slowa z bot_name_list i napisaniu zapomnij o usuwa klucz ze swojej bazy
     i informuje nas ze o tym zapomina 
     jesli nie ma takiego klucza poinformuje nas o tym
     gdy kazemu mu zapomniec o jakims slowie nie bedzie juz na nie reagowal
     flaga bylo sprawdza czy takie slowo bylo w bazie'''
     bylo = False             
-    if message.content.lower().startswith(tuple(f'{i} zapomnij o ' for i in olchus_list)):
+    if message.content.lower().startswith(tuple(f'{i} zapomnij o ' for i in bot_name_list)):
         zapomnij = message.content.lower().split('zapomnij o ')[1]
         with open('nauka.json', 'r', encoding='utf-8') as f:
             zapomnienie = json.load(f)
@@ -175,8 +192,8 @@ async def on_message(message):
        9072 nie jest stałą, te liczby sie zmieniaja
        jak tylko znajde rozwiazanie problemu to je udostepnie'''
        
-    #fragment ktory wylapuje wiadomosc na czacie ktora sie zaczyna od slowa z olchus_list i slowa wlacz   
-    if message.content.lower().startswith(tuple(f'{i} wlacz ' for i in olchus_list)):
+    #fragment ktory wylapuje wiadomosc na czacie ktora sie zaczyna od slowa z bot_name_list i slowa wlacz   
+    if message.content.lower().startswith(tuple(f'{i} wlacz ' for i in bot_name_list)):
         
         #rozdzielenie powyzszej czesci i slow ktore zostaly wprowadzone
         nuta = message.content.lower().split('wlacz ')[1]
@@ -213,8 +230,8 @@ async def on_message(message):
     '''fragment odpowiedzialny za polecanie piosenki na podstawie jednej podanej
        ta funkcja korzysta z innej aplikacji do polecania muzyki ktora dostosowalem do potrzeb bota'''
        
-    # po napisaniu slowa z listy olchus_list i slow polec cos podobnego rozdziela tekst aby jego druga czesc zawierala piosenke
-    if message.content.lower().startswith(tuple(f'{i} polec cos podobnego do ' for i in olchus_list)):
+    # po napisaniu slowa z listy bot_name_list i slow polec cos podobnego rozdziela tekst aby jego druga czesc zawierala piosenke
+    if message.content.lower().startswith(tuple(f'{i} polec cos podobnego do ' for i in bot_name_list)):
         tytul = message.content.lower().split('polec cos podobnego do ')[1]
         
         #zapisuje piosenke  do pliku wynik.json   
@@ -262,7 +279,7 @@ async def on_message(message):
     
     '''po napisaniu wyjeb oraz nazwy uzytkownika  uzytkownik jest usuwany z serwera
        gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''    
-    if any(message.content.lower().startswith(f'{i} wyjeb') for i in olchus_list):
+    if any(message.content.lower().startswith(f'{i} wyrzuc') for i in bot_name_list):
         kasacja = message.content.split()[2]  
         member = message.guild.get_member_named(kasacja)
         if member:
@@ -275,9 +292,6 @@ async def on_message(message):
     await bot.process_commands(message)
     
 #token bota, jest wymagany aby bot dzialal
-bot.run('MTEwMTQ3MTc3NjEzNzAzMTgzMA.GwYNH1.9dCbPGiNEEtpzbiMxmyinM1dLX7jD1lmzOP1CE')
 
+bot.run(bot_token)
 
-
-pogoda = requests.get('https://pogoda.interia.pl/prognoza-szczegolowa-milicz,cId,21375')
-print(pogoda.status_code)
