@@ -17,12 +17,19 @@ należy edytować linie 49 'bot_name_list = ['olchus','olchuś']' i wprowadzic t
 
 
 Bot posiada:
+
 pare wbudowanych komend tekstowych
+
 możliwość uruchomienia piosenki na spotify
+
 możliwość polecenia piosenki na spotify
+
 możliwość wyrzucenia użytkownika z serwera
+
 prosty model nauki, gdy powiemy mu co ma pisać na dane słowa będzie to robił
+
 możliwość aby bot zapomniał nauczonych go rzeczy
+
 podaje aktualną pogodę w podanym mieście
 
 
