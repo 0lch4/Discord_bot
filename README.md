@@ -1,4 +1,4 @@
-# discord_bot
+# Discord-bot
 
 ![GitHub forks](https://img.shields.io/badge/Version-1.0-red)
 
