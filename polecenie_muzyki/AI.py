@@ -3,11 +3,11 @@ import numpy as np
 import tensorflow as tf
 
 #pobiera dane z pliku json
-with open('wyniki\wynik2.json','r') as f:
+with open('wyniki/wynik2.json','r') as f:
     data = json.load(f)
 
 #wczytuje siec neuronowa    
-model = tf.keras.models.load_model('polecenie_muzyki\podobienstwo_piosenek.h5')
+model = tf.keras.models.load_model('polecenie_muzyki/podobienstwo_piosenek.h5')
 #dane wejsciowe
 X = np.array([[data['tempo'], data['valence'], data['loudness'],
              data['energy'], data['time_signature'],data['danceability'],data['speechiness'],data['mode'],data['key'],data['instrumentalness'],data['popularity']] for i in range(len(data))])
@@ -40,7 +40,7 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(X_norm, Y, epochs=120, batch_size=16)
 
 #nadpisanie modelu po kolejnej przetworzonej piosence dzieki temu uczy sie z kazdym uzyciem
-model.save('polecenie_muzyki\podobienstwo_piosenek.h5')
+model.save('polecenie_muzyki/podobienstwo_piosenek.h5')
 
 #wyciagniecie i zapisanie nowych danych piosenki
 results = []
@@ -62,5 +62,5 @@ results_dict = {
     "popularity": int(round(np.mean([result[10] for result in results]), 0)),
 }
 
-with open('wyniki\wynik3.json', 'w') as f:
+with open('wyniki/wynik3.json', 'w') as f:
     json.dump(results_dict, f, indent=2, ensure_ascii=False)
