@@ -36,4 +36,14 @@ podaje aktualną pogodę w podanym mieście
 komendy można zobaczyć wpisując !pomocy
 
 
+Aby zbudować obraz docker zakładając, że dockerfile znajduje się z resztą plików jak w repozytorium należy wpisać:
 
+docker build -t discord_bot .
+
+gdzie discord_bot można zmienić według własnych preferencji
+
+Następnie aby uruchomić kontener:
+
+docker run --env-file .env -d discord_bot
+
+Zakładając, że w pliku .env są prawidłowe wartości i znajduje się z resztą plików jak w repozytorium plik .env.example

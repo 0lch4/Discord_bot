@@ -20,7 +20,7 @@ if response.status_code == 200:
     access_token = response.json()['access_token']
     while True:
         #wczytywana jest nazwa utworu zapisana w pliku i wysylana w żądaniu
-        with open('wyniki\wynik.json') as f:
+        with open('wyniki/wynik.json') as f:
             tytul = json.load(f)
         query = f"track:{tytul}"
         search_url = f"https://api.spotify.com/v1/search?q={query}&type=track&limit=1"
@@ -44,7 +44,7 @@ if response.status_code == 200:
                 if response.status_code == 200 and popularity_response.status_code == 200:
                     data = response.json()
                     popularity_data = popularity_response.json()
-                    with open('wyniki\wynik2.json', 'w', encoding='utf-8') as f:
+                    with open('wyniki/wynik2.json', 'w', encoding='utf-8') as f:
                         json.dump({'tempo': data['tempo'], 'valence': data['valence'], 'loudness': data['loudness'], 'energy': data['energy'],
                                 'time_signature': data['time_signature'], 'mode': data['mode'], 'key': data['key'], 'danceability': data['danceability'],
                                 'speechiness': data['speechiness'], 'instrumentalness': data['instrumentalness'], 'popularity': popularity_data['popularity']}, f, indent=2, ensure_ascii=False)

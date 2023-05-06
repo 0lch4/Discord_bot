@@ -17,13 +17,13 @@ token_headers = {
 response = requests.post(token_url, data=token_data, headers=token_headers)
 
 #laduje wybrany gatunek
-with open('polecenie_muzyki\gatunek.json','r') as f:
+with open('polecenie_muzyki/gatunek.json','r') as f:
     genre = json.load(f)    
 genre = genre.lower()
 #laduje nowe dane utworu
 if response.status_code == 200:
     access_token = response.json()['access_token']
-    with open('wyniki\wynik3.json','r') as f:
+    with open('wyniki/wynik3.json','r') as f:
         new_data = json.load(f)
     #przypisuje wlasciwosci piosenki do zmiennych   
     tempo = new_data['tempo']
@@ -79,7 +79,7 @@ if response.status_code == 200:
                 tracks_info.append(track_info)
                 i+=1
                 #zapisuje do pliku wynik4.json
-            with open('wyniki\wynik4.json','w', encoding='utf-8') as f:
+            with open('wyniki/wynik4.json','w', encoding='utf-8') as f:
                 json.dump(tracks_info, f, indent=4)
                     
     else:

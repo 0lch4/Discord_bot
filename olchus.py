@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyClientCredentials
 from discord import FFmpegPCMAudio
 import subprocess
 import json
@@ -16,14 +16,11 @@ load_dotenv()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-bot_token = os.getenv('BOT_TOKEN') 
+bot_token = os.getenv('BOT_TOKEN')
 client_id = os.getenv('SPOTIFY_ID')
 client_secret = os.getenv('SPOTIFY_SECRET')
-redirect_uri = "http://localhost:8000"
-scope = "user-library-read,user-modify-playback-state,user-read-playback-state"
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope))
-
+sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
 '''
 listy z zawartoscia
 zmienna imie_dziewczyny przechowuje imie naszej dziewczyny
@@ -178,7 +175,7 @@ async def on_message(message):
         if bylo == False:     
             await message.channel.send('ja nawet nic takiego nie umiem xD')
         #zapisuje zmienione dane lub pozostawia stare dane jesli nie mial takiego klucza        
-        with open('nauka.json', 'w', encoding='utf-8') as f:
+        with open('moja_nauka.json', 'w', encoding='utf-8') as f:
             json.dump(zapomnienie, f, ensure_ascii=False, indent=4)
                  
                  
@@ -222,7 +219,7 @@ async def on_message(message):
             if message.guild.voice_client:
                 await message.guild.voice_client.disconnect()
             vc = await channel.connect(reconnect=True, timeout=10.0)
-            vc.play(FFmpegPCMAudio(audio_url+"&play=true", executable="ffmpeg.exe", options="-vn"))
+            vc.play(FFmpegPCMAudio(audio_url+"&play=true", options="-vn"))
         else:
             #jesli szukany rezultat nie istnieje informuje o tym
             await message.channel.send('nie widze takiej')
@@ -235,21 +232,21 @@ async def on_message(message):
         tytul = message.content.lower().split('polec cos podobnego do ')[1]
         
         #zapisuje piosenke  do pliku wynik.json   
-        with open('wyniki\wynik.json','w',encoding='utf-8') as f:
+        with open('wyniki/wynik.json','w',encoding='utf-8') as f:
             json.dump(tytul,f, indent=2, ensure_ascii=False)    
             
         #uruchamia aplikacje do pozyskania linku i parametrow utworu   
-        subprocess.run(["python", "polecenie_muzyki\pobranie_piosenki.py"])
+        subprocess.run(["python", "polecenie_muzyki/pobranie_piosenki.py"])
         
         #jesli sie to powiedzie bot informuje na czacie ze mysli    
         await message.channel.send("dobra mysle czaj")
         
         #uruchamia aplikacje z siecia neuronowa ktora przetwarza dane o utworze i dobiera parametry aby dac podobny
-        subprocess.run(["python", "polecenie_muzyki\AI.py"])
+        subprocess.run(["python", "polecenie_muzyki/AI.py"])
         
         #pyta uzytkownika o wybranie gatunku muzycznego, ktory chce otrzymac i wypisuje dostepne
         await message.channel.send('dobra a gatunek jaki chcesz miec? masz do wyboru:')
-        with open('polecenie_muzyki\gatunki.txt') as f:
+        with open('polecenie_muzyki/gatunki.txt') as f:
                 for gatunek in f:
                     await message.channel.send(gatunek)
                     
@@ -258,14 +255,14 @@ async def on_message(message):
         
         #zapisuje ostatnia wiadomosc uzytkownika do zmiennej i nastepnie zapisuje ja do pliku gatunek.json                             
         user_message = await bot.wait_for('message', check=lambda m: m.author == message.author)
-        with open('polecenie_muzyki\gatunek.json','w') as f:
+        with open('polecenie_muzyki/gatunek.json','w') as f:
                 json.dump(user_message.content,f, indent=2, ensure_ascii=False)
                 
         #uruchamia aplikacje ktora wysyla nowe dane do spotify i pobiera odpowiednie piosenki       
-        subprocess.run(["python", "polecenie_muzyki\zwrócenie_piosenki.py"])
+        subprocess.run(["python", "polecenie_muzyki/zwrócenie_piosenki.py"])
         
         #odczytuje 3 najbardzije pasujace piosenki z wynik4.json i wyswietla na kanale
-        with open('wyniki\wynik4.json','r',encoding='utf-8') as f:
+        with open('wyniki/wynik4.json','r',encoding='utf-8') as f:
                 polecane = json.load(f)
                 miejsce = 1
         for polecenie in polecane:
