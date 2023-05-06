@@ -36,7 +36,7 @@ podaje aktualną pogodę w podanym mieście
 komendy można zobaczyć wpisując !pomocy
 
 
-Aby zbudować obraz docker zakładając, że dockerfile znajduje się z resztą plików jak w repozytorium należy wpisać:
+Aby zbudować obraz Docker zakładając, że Dockerfile znajduje się z resztą plików jak w repozytorium należy wpisać:
 
 docker build -t discord_bot .
 
