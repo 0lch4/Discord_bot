@@ -152,7 +152,7 @@ async def on_message(message):
         for lrn in learn:
             if instruction in lrn:
                 is_it = True
-                await message.channel.send(i[instruction])
+                await message.channel.send(lrn[instruction])
         
         if is_it == False:
             await message.channel.send('nie umiem nic takiego ale mozesz mnie nauczyc')
