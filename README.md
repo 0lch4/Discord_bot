@@ -38,12 +38,10 @@ komendy można zobaczyć wpisując !pomocy
 
 Aby zbudować obraz Docker zakładając, że Dockerfile znajduje się z resztą plików jak w repozytorium należy wpisać:
 
-docker build -t discord_bot .
-
-gdzie discord_bot można zmienić według własnych preferencji
+docker build -t bot .
 
 Następnie aby uruchomić kontener:
 
-docker run --env-file .env -d discord_bot
+docker run --env-file .env -d bot
 
 Zakładając, że w pliku .env są prawidłowe wartości i znajduje się z resztą plików jak w repozytorium plik .env.example

@@ -23,16 +23,16 @@ client_secret = os.getenv('SPOTIFY_SECRET')
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
 '''
 listy z zawartoscia
-zmienna imie_dziewczyny przechowuje imie naszej dziewczyny
+zmienna girlfriend_name przechowuje imie naszej dziewczyny
 1 uwzgledniajaca literowki zdania kto jest najpiekniejszy na swiecie, zrobilem aby mojej dziewczynie bylo milo mozna zedytowac pod siebie
-2 zawiera slowa ktore bot napisze po napisaniu olchus i jednego slowa z listy powitanie_list
+2 zawiera slowa ktore bot napisze po napisaniu olchus i jednego slowa z listy hello_list
 3 uwzglednia na co bot ma reagowac, w moim przypadku reaguje na swoją nazwe(nazwalem go olchus)
 4 zawiera liste piw, gdy spytasz sie bota jakie dzis wypic poda jedno z tych
 mozna tu tworzyc wlasne listy
 '''
-imie_dziewczyny = 'Olusia'
+girlfriend_name = 'Olusia'
 
-piekna_list=['kto jest najpiekniejszy na swiecie?',
+beautiful_list=['kto jest najpiekniejszy na swiecie?',
             'kto jest najpiekniejszy na swiecie',
             'kto jest najpiękniejszy na świecie?',
             'kto jest najpiękniejszy na świecie',
@@ -41,11 +41,12 @@ piekna_list=['kto jest najpiekniejszy na swiecie?',
             'kto jest najpiękniejszy na swiecie?'
             'kto jest najpiękniejszy na swiecie'
             ]
-powitanie_list=['hej','czesc','siema','witaj','cześć','elo','hejka']
+hello_list=['hej','czesc','siema','witaj','cześć','elo','hejka','hello']
+
 #w przypadku innej nazwy bota wystarczy zmodyfikowac ta liste
 bot_name_list = ['olchus','olchuś']
 
-browary_list = ['Żywiec', 'Tyskie', 'Lech', 'Okocim', 'Warka', 'Perła', 'Łomża', 'Książęce', 'Harnaś', 'Pilsner Urquell', 'Mocne Full', 'Wojak', 'Carlsberg', 'Kasztelan', 'Radler', 'Książęce','Redds', 'Zubr', 'Desperados','Corona','Piast']
+beer_list = ['Żywiec', 'Tyskie', 'Lech', 'Okocim', 'Warka', 'Perła', 'Łomża', 'Książęce', 'Harnaś', 'Pilsner Urquell', 'Mocne Full', 'Wojak', 'Carlsberg', 'Kasztelan', 'Radler', 'Książęce','Redds', 'Zubr', 'Desperados','Corona','Piast']
 
 #napis pojawiajacy sie w konsoli, ma za zadanie poinformowac ze bot prawidlowo sie uruchomil
 @bot.event
@@ -79,18 +80,18 @@ async def on_message(message):
     
     '''fragment odpowiedzialny za powitanie
        po napisaniu slowa z listy powitanie oraz slowa z listy bot_name_list np hej olchus bot przywita sie z nami'''
-    if any(message.content.lower().startswith(p) for p in powitanie_list) and any(i in message.content.lower() for i in bot_name_list):
-        await message.channel.send(random.choice(powitanie_list))
+    if any(message.content.lower().startswith(p) for p in hello_list) and any(i in message.content.lower() for i in bot_name_list):
+        await message.channel.send(random.choice(hello_list))
         
     '''fragment odpowiedzialny za prawienie komplementow naszej dziewczynie
-       po napisaniu slowa z listy piekna_list bot zwroci wiadomosc ze jest ona najpiekniejsza'''
-    if any(message.content.lower().startswith(i) for i in bot_name_list) and any(p in message.content.lower() for p in piekna_list):
-        await message.channel.send(f'Proste, że {imie_dziewczyny} <3')
+       po napisaniu slowa z listy beautiful_list bot zwroci wiadomosc ze jest ona najpiekniejsza'''
+    if any(message.content.lower().startswith(i) for i in bot_name_list) and any(p in message.content.lower() for p in beautiful_list):
+        await message.channel.send(f'Proste, że {girlfriend_name} <3')
         
     '''fragment odpowiedzialny za losowanie piwa, 
-       po napisaniu slowa z listy bot_name_list oraz jakiego browara dzis wypic losuje piwo z listy browary_list'''    
+       po napisaniu slowa z listy bot_name_list oraz jakiego browara dzis wypic losuje piwo z listy beer_list'''    
     if any(message.content.lower().startswith(f'{i} jakiego browara dzis wypic') for i in bot_name_list): 
-        await message.channel.send(f'dawaj wypij {random.choice(browary_list)}')  
+        await message.channel.send(f'dawaj wypij {random.choice(beer_list)}')  
         
     '''fragment kodu odpowiedzialny za chwalenie tworcy,
        gdy ktos pochwali bota bot chwali autora za pomysl i sporo poswieconego czasu'''
@@ -101,12 +102,12 @@ async def on_message(message):
         wyswietla temperature w twoim miescie, w moim przypadku jest ustawione na Milicz
         pobieranie temperatury nastepuje ze strony https://dobrapogoda24.pl/'''
     if any(message.content.lower().startswith(f'{i} ile dzisiaj stopni w ') for i in bot_name_list):
-        miejscowosc = message.content.lower().split('ile dzisiaj stopni w ')[1]
-        pogoda = requests.get(f'https://dobrapogoda24.pl/pogoda/{miejscowosc}')
-        soup = BeautifulSoup(pogoda.text,'lxml')
+        city = message.content.lower().split('ile dzisiaj stopni w ')[1]
+        weather = requests.get(f'https://dobrapogoda24.pl/pogoda/{city}')
+        soup = BeautifulSoup(weather.text,'lxml')
         try:
-            temperatura = soup.select('.tab_temp_max')[0]
-            await message.channel.send(f'w {miejscowosc} jest dzis {temperatura.text}')
+            temperature = soup.select('.tab_temp_max')[0]
+            await message.channel.send(f'w {city} jest dzis {temperature.text}')
         except IndexError:
             await message.channel.send('nie widze takiej miejscowosci')
 
@@ -114,28 +115,28 @@ async def on_message(message):
     
     '''fragment kodu ktory umozliwia uczenia bota nowych fraz
        gdy podamy slowo z listy bot_name_list i napiszemy czas na nauke 
-       bot spyta sie na co ma reagowac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej reakcja
+       bot spyta sie na co ma reagowac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej reaction
        nastepnie bot sie spyta jak ma odpowiadac i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej odpowiedz'''
     if any(message.content.lower().startswith(f'{i} czas na nauke') for i in bot_name_list):
         await message.channel.send("na co mam reagować?")
-        reakcja = await bot.wait_for('message', check=lambda m: m.author == message.author)
+        reaction = await bot.wait_for('message', check=lambda m: m.author == message.author)
         await message.channel.send("jak mam odpowiadać?")
-        odpowiedz = await bot.wait_for('message', check=lambda m: m.author == message.author)
+        answer = await bot.wait_for('message', check=lambda m: m.author == message.author)
 
         # bot otwiera swoj zbior danych
         with open('data.json', 'r', encoding='utf-8') as f:
-            dane = json.load(f)
+            data = json.load(f)
         
         #utworzenie slownika gdzie do slow na ktore ma reagowac jest przypisana odpowiedz    
-        interakcja = {reakcja.content: odpowiedz.content}
+        interaction = {reaction.content: answer.content}
             
         '''bot sprawdza czy klucz na ktory ma reagowac jest w jego zbiorze danych
         jesli jest odpowiada nam ze wie co ma mowic
         jesli nie ma zapisuje nam slowa na ktore ma reagowac i odpowiedz na nia do pliku nauka'''
-        if not any(i == interakcja for i in dane):
-            dane.append(interakcja)
+        if not any(inter == interaction for inter in data):
+            data.append(interaction)
             with open('data.json', 'w', encoding='utf-8') as f:
-                json.dump(dane, f, ensure_ascii=False, indent=4)
+                json.dump(data, f, ensure_ascii=False, indent=4)
             await message.channel.send("dobra zapamiętałem")
         else:
             await message.channel.send("juz wiem co mam na to odpowiedziec")
@@ -143,17 +144,17 @@ async def on_message(message):
     '''po napisaniu ej i slowa z listy bot_name_list a nastepnie dowolnych slow bot sprawdzi czy umie na nie odpowiedziec
        jesli nie to poinformuje nas o tym jesli tak to odpowie nam
        flaga czy_jest sprawdza czy takie slowo jest w bazie'''       
-    czy_jest = False        
+    is_it = False        
     if any(message.content.lower().startswith(f'ej {i}') for i in bot_name_list):
-        polecenie = message.content[10:]
+        instruction = message.content[10:]
         with open('data.json', 'r', encoding='utf-8') as f:
-            nauka = json.load(f)
-        for i in nauka:
-            if polecenie in i:
-                czy_jest = True
-                await message.channel.send(i[polecenie])
+            learn = json.load(f)
+        for lrn in learn:
+            if instruction in lrn:
+                is_it = True
+                await message.channel.send(i[instruction])
         
-        if czy_jest == False:
+        if is_it == False:
             await message.channel.send('nie umiem nic takiego ale mozesz mnie nauczyc')
     
     '''fragment ktory umozliwa oduczcenia czegos bota
@@ -162,21 +163,21 @@ async def on_message(message):
     jesli nie ma takiego klucza poinformuje nas o tym
     gdy kazemu mu zapomniec o jakims slowie nie bedzie juz na nie reagowal
     flaga bylo sprawdza czy takie slowo bylo w bazie'''
-    bylo = False             
+    was = False             
     if message.content.lower().startswith(tuple(f'{i} zapomnij o ' for i in bot_name_list)):
-        zapomnij = message.content.lower().split('zapomnij o ')[1]
+        forget = message.content.lower().split('zapomnij o ')[1]
         with open('data.json', 'r', encoding='utf-8') as f:
-            zapomnienie = json.load(f)
-        for i in zapomnienie:
-            if zapomnij in i:
-                bylo=True
-                i.pop(zapomnij)
+            forgot = json.load(f)
+        for frg in forgot:
+            if forget in frg:
+                was = True
+                frg.pop(forget)
                 await message.channel.send("no to zapominam")
-        if bylo == False:     
+        if was == False:     
             await message.channel.send('ja nawet nic takiego nie umiem xD')
         #zapisuje zmienione dane lub pozostawia stare dane jesli nie mial takiego klucza        
         with open('data.json', 'w', encoding='utf-8') as f:
-            json.dump(zapomnienie, f, ensure_ascii=False, indent=4)
+            json.dump(forgot, f, ensure_ascii=False, indent=4)
                  
                  
 #obsluga muzyczna
@@ -193,10 +194,10 @@ async def on_message(message):
     if message.content.lower().startswith(tuple(f'{i} wlacz ' for i in bot_name_list)):
         
         #rozdzielenie powyzszej czesci i slow ktore zostaly wprowadzone
-        nuta = message.content.lower().split('wlacz ')[1]
+        song = message.content.lower().split('wlacz ')[1]
         
         #wyszukuje piosenke o podanym tytule i pobiera pierwsza
-        results = sp.search(q=nuta, limit=1, type='track')
+        results = sp.search(q=song, limit=1, type='track')
         
         #sprawdza czy szukany rezultat istnieje
         if len(results['tracks']['items']) > 0:
@@ -233,11 +234,11 @@ async def on_message(message):
        
     # po napisaniu slowa z listy bot_name_list i slow polec cos podobnego rozdziela tekst aby jego druga czesc zawierala piosenke
     if message.content.lower().startswith(tuple(f'{i} polec cos podobnego do ' for i in bot_name_list)):
-        tytul = message.content.lower().split('polec cos podobnego do ')[1]
+        title = message.content.lower().split('polec cos podobnego do ')[1]
         
         #zapisuje piosenke  do pliku wynik.json   
         with open('results/result.json','w',encoding='utf-8') as f:
-            json.dump(tytul,f, indent=2, ensure_ascii=False)    
+            json.dump(title,f, indent=2, ensure_ascii=False)    
             
         #uruchamia aplikacje do pozyskania linku i parametrow utworu   
         subprocess.run(["python", "music_recomendation/song_analize.py"])
@@ -251,8 +252,8 @@ async def on_message(message):
         #pyta uzytkownika o wybranie gatunku muzycznego, ktory chce otrzymac i wypisuje dostepne
         await message.channel.send('dobra a gatunek jaki chcesz miec? masz do wyboru:')
         with open('music_recomendation/genres.txt') as f:
-                for gatunek in f:
-                    await message.channel.send(gatunek)
+                for genre in f:
+                    await message.channel.send(genre)
                     
         #informuje ze w przypadku blednych danych da ostatnie wyniki
         await message.channel.send('jak jakis smieszek da inny niz z listy albo nieistniejaca piosenke dam jakies stare i tyle xD')
@@ -267,27 +268,27 @@ async def on_message(message):
         
         #odczytuje 3 najbardzije pasujace piosenki z wynik4.json i wyswietla na kanale
         with open('results/result4.json','r',encoding='utf-8') as f:
-                polecane = json.load(f)
-                miejsce = 1
-        for polecenie in polecane:
-                tytul = polecenie['utwór']
-                wykonawca = polecenie['wykonawca']
-                link = polecenie['link']
-                await message.channel.send(f"Miejsce: {miejsce}\n{tytul} - {wykonawca}\n{link}")
-                miejsce+=1
+                recomendation = json.load(f)
+                place = 1
+        for recomend in recomendation:
+                title = recomend['utwór']
+                author = recomend['wykonawca']
+                link = recomend['link']
+                await message.channel.send(f"Miejsce: {place}\n{title} - {author}\n{link}")
+                place+=1
                 
 #obsluga uzytkownikow
     
     '''po napisaniu wyrzuc oraz nazwy uzytkownika  uzytkownik jest usuwany z serwera
        gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''    
     if any(message.content.lower().startswith(f'{i} wyrzuc') for i in bot_name_list):
-        kasacja = message.content.split()[2]  
-        member = message.guild.get_member_named(kasacja)
+        kick = message.content.split()[2]  
+        member = message.guild.get_member_named(kick)
         if member:
             await member.kick(reason='naura')
-            await message.channel.send(f'{kasacja} juz nie bedzie sprawial problemow')
+            await message.channel.send(f'{kick} juz nie bedzie sprawial problemow')
         else:
-            await message.channel.send(f'Nie widze {kasacja}')
+            await message.channel.send(f'Nie widze {kick}')
 
     #sprawdza czy wiadomosc zawiera komende dla bota
     await bot.process_commands(message)
