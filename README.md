@@ -1,6 +1,6 @@
 # Discord-bot
 
-![GitHub forks](https://img.shields.io/badge/Version-1.0.2-red)
+![GitHub forks](https://img.shields.io/badge/Version-1.1-red)
 
 Interface in Polish lang
 
