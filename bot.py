@@ -67,7 +67,12 @@ rozmowa z botem na podstawie wyuczoncych rzeczy: 'ej ', nazwa bota, polecenie
 oduczenie nauczonej rzeczy: nazwa bota, 'zapomnij o ' nazwa rzeczy na ktora reaguje
 wlaczenie muzyki ze spotify: nazwa bota, 'wlacz ',nazwa piosenki
 polecenie muzyki ze spotify: nazwa bota, 'polec cos podobnego do ', nazwa piosenki 
-wyrzucenie z kanalu" nazwa bota, 'wyrzuc ', nazwa uzytkownika
+wyrzucenie z serwera: nazwa bota, 'wyrzuc z serwera ', nazwa uzytkownika
+wyrzucenie z kanalu: nazwa bota, 'wyrzuc z kanalu ', nazwa uzytkownika
+wycieszenie: nazwa bota, 'wycisz ', nazwa uzytkownika
+wylaczenie dzwieku: nazwa bota, 'wylacz dzwiek ', nazwa uzytkownika
+zmiana nazwy uzytkownika: nazwa bota, 'zmien nazwe ', nazwa uzytkownika, nowa nazwa uzytkownika
+przeniesienie na inny kanal: nazwa bota, 'przenies ', nazwa uzytkownika, kanal docelowy
 ''')
 
 #obsluga polecen, mozna dodawac tutaj swoje
@@ -279,16 +284,79 @@ async def on_message(message):
                 
 #obsluga uzytkownikow
     
-    '''po napisaniu wyrzuc oraz nazwy uzytkownika  uzytkownik jest usuwany z serwera
+    '''po napisaniu wyrzuc z serwera oraz nazwy uzytkownika  uzytkownik jest usuwany z serwera
        gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''    
-    if any(message.content.lower().startswith(f'{i} wyrzuc') for i in bot_name_list):
-        kick = message.content.split()[2]  
+    if any(message.content.lower().startswith(f'{i} wyrzuc z serwera') for i in bot_name_list):
+        kick = message.content.split()[4]  
         member = message.guild.get_member_named(kick)
         if member:
             await member.kick(reason='naura')
             await message.channel.send(f'{kick} juz nie bedzie sprawial problemow')
         else:
             await message.channel.send(f'Nie widze {kick}')
+
+    '''po napisaniu wyrzuc z kanalu oraz nazwy uzytkownika  uzytkownik jest usuwany z kanalu
+       gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi''' 
+    if any(message.content.lower().startswith(f'{i} wyrzuc z kanalu') for i in bot_name_list):
+        kick = message.content.split()[4]  
+        member = message.guild.get_member_named(kick)
+        if member:
+            await member.move_to(None)
+            await message.channel.send(f'{kick} juz nie bedzie przeszakadzac')
+        else:
+            await message.channel.send(f'Nie widze {kick}')
+            
+    '''po napisaniu wycisz oraz nazwy uzytkownika uzytkownik jest wyciszany
+       gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''            
+    if any(message.content.lower().startswith(f'{i} wycisz') for i in bot_name_list):
+        mute = message.content.split()[2]  
+        member = message.guild.get_member_named(mute)
+        if member:
+            await member.edit(mute=True)
+            await message.channel.send(f'{mute} juz nie bedzie gderal')
+        else:
+            await message.channel.send(f'Nie widze {mute}')
+
+    '''po napisaniu wylacz dzwiek oraz nazwy uzytkownika uzytkownik jest ma wylaczony dzwiek
+       gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''              
+    if any(message.content.lower().startswith(f'{i} wylacz dzwiek') for i in bot_name_list):
+        mute = message.content.split()[3]  
+        member = message.guild.get_member_named(mute)
+        if member:
+            await member.edit(deafen=True)
+            await message.channel.send(f'{mute} teraz juz cie nie uslyszy')
+        else:
+            await message.channel.send(f'Nie widze {mute}')
+            
+    '''po napisaniu zmien nazwe oraz nazwy uzytkownika bot pyta na co ma zmienic nazwe podanego uzytkownika i wykonuje polecenie
+       gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''  
+    if any(message.content.lower().startswith(f'{i} zmien nazwe') for i in bot_name_list):
+        name = message.content.split()[3]  
+        member = message.guild.get_member_named(name)
+        if member:
+            await message.channel.send("a jak go nazwac?")
+            new_name = await bot.wait_for('message', check=lambda m: m.author == message.author)
+            await member.edit(nick=new_name.content)
+            await message.channel.send(f'{name} to od teraz teraz {new_name.content}')
+        else:
+            await message.channel.send(f'Nie widze {name}')
+
+    '''po napisaniu przenies oraz nazwy uzytkownika bot pyta na jaki kanal go przeniesc i wykonuje polecenie
+       gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi'''  
+    if any(message.content.lower().startswith(f'{i} przenies') for i in bot_name_list):
+        move = message.content.split()[2]  
+        member = message.guild.get_member_named(move)
+        if member:
+            await message.channel.send("a gdzie?")
+            new_channel = await bot.wait_for('message', check=lambda m: m.author == message.author)
+            channel = discord.utils.get(message.guild.channels, name=new_channel.content)
+            if channel:
+                await member.move_to(channel)
+                await message.channel.send(f'{move} został przeniesiony na kanał {channel.name}')
+            else:
+                await message.channel.send(f'Nie znaleziono kanału o nazwie {new_channel.content}')
+        else:
+            await message.channel.send(f'Nie widzę {move}')
 
     #sprawdza czy wiadomosc zawiera komende dla bota
     await bot.process_commands(message)
