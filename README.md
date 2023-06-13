@@ -1,49 +1,85 @@
-# Discord-bot
-
-![GitHub forks](https://img.shields.io/badge/Version-1.1-red)
+# Discord bot ![GitHub forks](https://img.shields.io/badge/Version-1.2.0-red)
 
 Interface in Polish lang
 
-Instalacja bibliotek:
+# Opis
+
+Bot na Discorda, posiada on:
+
+-pare wbudowanych komend tekstowych
+
+-możliwość uruchomienia piosenki na Spotify
+
+-możliwość polecenia piosenki na Spotify
+
+-możliwość zarządzania użytkownikami na serwerze
+
+-prosty model nauki, można go nauczyć jak ma odpowiadać na dane kwestie
+
+-możliwość oduczenia go nauczonej rzeczy
+
+-możliwość podania aktualnej pogody w podanym mieście
 
 
-pip install -r requirements.txt
+## Komendy można zobaczyć wpisując !pomocy
+
+## Licencja
+
+Aplikacja działa na licencji MIT
+
+# Instalacja
 
 
-Wymagane api keye znajdują się w pliku .env.example
-należy utworzyć plik .env i podać tam swoje klucze według wzoru
+## Kopiowanie repozytorium:
 
+```
+git clone https://github.com/0lch4/Slownik_starszej_mowy.git
+```
 
-Bot w moim przypadku reaguje na olchus, bo tak go nazwalem. Aby zmienic slowa na ktore reaguje
-należy edytować linie 49 'bot_name_list = ['olchus','olchuś']' i wprowadzic tam swoją nazwe bota
+## Instalacja bibliotek:
 
+Wymagane jest narzędzie `poetry`:
 
-Bot posiada:
+```
+pip install poetry
+```
 
-pare wbudowanych komend tekstowych
+Następnie w głównej lokalizacji wpisujemy
 
-możliwość uruchomienia piosenki na spotify
+```
+poetry install
+```
 
-możliwość polecenia piosenki na spotify
+## Plik .env:
 
-możliwość wyrzucenia użytkownika z serwera
+Należy stworzyć plik `.env` na podstawie `.env.example`
 
-prosty model nauki, gdy powiemy mu co ma pisać na dane słowa będzie to robił
+`SPOTIFY_ID` i `SPOTIFY_SECRET` można pozyskać [tutaj](https://developer.spotify.com/)
 
-możliwość aby bot zapomniał nauczonych go rzeczy
+`BOT_TOKEN` można pozyskać [tutaj](https://discord.com/developers/applications), po uzyskaniu tokenu, należy ustawić botu uprawnienia administratora oraz dodać go do serwera. Wszystko jest dostępne z tego linku.
 
-podaje aktualną pogodę w podanym mieście
+`BOT_NAMES` to imiona bota na które będzie reagował
 
+`GIRLFRIEND_NAME` to imie dziewczyny, której będzie prawił komplementy
 
-komendy można zobaczyć wpisując !pomocy
+# Uruchamianie
 
+Gdy wszystkie zależności zostały spełnione wpisujemy w głównej lokalizacji:
 
-Aby zbudować obraz Docker zakładając, że Dockerfile znajduje się z resztą plików jak w repozytorium należy wpisać:
+```
+python -m bot.bot
+```
 
+## Uruchamianie w kontenerze
+
+Aby zbudować kontener należy wpisać w głównej lokalizacji:
+
+```
 docker build -t bot .
+```
 
 Następnie aby uruchomić kontener:
 
+```
 docker run --env-file .env -d bot
-
-Zakładając, że w pliku .env są prawidłowe wartości i znajduje się z resztą plików jak w repozytorium plik .env.example
+```
