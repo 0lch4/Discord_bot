@@ -21,6 +21,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 bot_token = os.getenv("BOT_TOKEN")
 client_id = os.getenv("SPOTIFY_ID")
 client_secret = os.getenv("SPOTIFY_SECRET")
+bot_names = os.getenv("BOT_NAMES")
+girlfriend_name = os.getenv("GIRLFRIEND_NAME")
 
 sp = spotipy.Spotify(
     auth_manager=SpotifyClientCredentials(
@@ -37,7 +39,6 @@ dziewczynie bylo milo mozna zedytowac pod swoją
 4 zawiera liste piw, gdy spytasz sie bota jakie dzis wypic poda jedno z tych
 mozna tu tworzyc wlasne listy
 """  # noqa: E501
-girlfriend_name = "Olusia"
 
 beautiful_list = [
     "kto jest najpiekniejszy na swiecie?",
@@ -52,7 +53,8 @@ beautiful_list = [
 hello_list = ["hej", "czesc", "siema", "witaj", "cześć", "elo", "hejka", "hello"]
 
 # w przypadku innej nazwy bota wystarczy zmodyfikowac ta liste
-bot_name_list = ["olchus", "olchuś"]
+if bot_names:
+    bot_names_list = bot_names.split(",")
 
 beer_list = [
     "Żywiec",
@@ -81,13 +83,13 @@ beer_list = [
 
 # napis pojawiajacy sie w konsoli, ma za zadanie poinformowac ze bot prawidlowo sie uruchomil  # noqa: E501
 @bot.event
-async def on_ready()->Any:
+async def on_ready() -> Any:
     print(f"{bot.user} jestem gotów by ci służyć")
 
 
 # komenda testowa aby pokazac dostepne opcje
 @bot.command(name="pomocy")
-async def pomocy(ctx:Any)->Any:
+async def pomocy(ctx: Any) -> Any:
     await ctx.send(
         """
 powitanie: slowo powitalne, nazwa bota
@@ -111,17 +113,17 @@ przeniesienie na inny kanal: nazwa bota, 'przenies ', nazwa uzytkownika, kanal d
 
 # obsluga polecen, mozna dodawac tutaj swoje
 @bot.event
-async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
+async def on_message(message: Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     if message.author == bot.user:
         return
 
     # wbudowana obsluga tekstowa
 
     """fragment odpowiedzialny za powitanie po napisaniu slowa z listy powitanie
-    oraz slowa z listy bot_name_list np hej olchus bot przywita sie z nami
+    oraz slowa z listy bot_names_list np hej olchus bot przywita sie z nami
     """
     if any(message.content.lower().startswith(p) for p in hello_list) and any(
-        i in message.content.lower() for i in bot_name_list
+        i in message.content.lower() for i in bot_names_list
     ):
         await message.channel.send(random.choice(hello_list))  # noqa: S311
 
@@ -129,24 +131,26 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     po napisaniu slowa z listy beautiful_list bot zwroci wiadomosc ze jest
     ona najpiekniejsza
     """
-    if any(message.content.lower().startswith(i) for i in bot_name_list) and any(
+    if any(message.content.lower().startswith(i) for i in bot_names_list) and any(
         p in message.content.lower() for p in beautiful_list
     ):
         await message.channel.send(f"Proste, że {girlfriend_name} <3")
 
     """fragment odpowiedzialny za losowanie piwa, po napisaniu slowa z listy
-    bot_name_list oraz jakiego browara dzis wypic losuje piwo z listy beer_list
+    bot_names_list oraz jakiego browara dzis wypic losuje piwo z listy beer_list
     """
     if any(
         message.content.lower().startswith(f"{i} jakiego browara dzis wypic")
-        for i in bot_name_list
+        for i in bot_names_list
     ):
-        await message.channel.send(f"dawaj wypij {random.choice(beer_list)}")# noqa:S311
+        await message.channel.send(
+            f"dawaj wypij {random.choice(beer_list)}"  # noqa:S311
+        )
 
     """fragment kodu odpowiedzialny za chwalenie tworcy,
        gdy ktos pochwali bota bot chwali autora za pomysl i sporo poswieconego czasu"""
     if any(
-        message.content.lower().startswith(f"{i} super jestes") for i in bot_name_list
+        message.content.lower().startswith(f"{i} super jestes") for i in bot_names_list
     ):
         await message.channel.send("jak moj tworca")
 
@@ -156,7 +160,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     """
     if any(
         message.content.lower().startswith(f"{i} ile dzisiaj stopni w ")
-        for i in bot_name_list
+        for i in bot_names_list
     ):
         city = message.content.lower().split("ile dzisiaj stopni w ")[1]
         weather = requests.get(f"https://dobrapogoda24.pl/pogoda/{city}")  # noqa: S113
@@ -170,13 +174,13 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     # nauka
 
     """fragment kodu ktory umozliwia uczenia bota nowych fraz
-    gdy podamy slowo z listy bot_name_list i napiszemy czas na nauke
+    gdy podamy slowo z listy bot_names_list i napiszemy czas na nauke
     bot spyta sie na co ma reagowac i nastepna wiadomosc ktora napiszemy
     zostanie zapisana do zmiennej reaction nastepnie bot sie spyta jak ma odpowiadac
     i nastepna wiadomosc ktora napiszemy zostanie zapisana do zmiennej odpowiedz
     """
     if any(
-        message.content.lower().startswith(f"{i} czas na nauke") for i in bot_name_list
+        message.content.lower().startswith(f"{i} czas na nauke") for i in bot_names_list
     ):
         await message.channel.send("na co mam reagować?")
         reaction = await bot.wait_for(
@@ -188,7 +192,8 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
         )
 
         # bot otwiera swoj zbior danych
-        with Path.open("bot/bot_datas/data.json", encoding="utf-8") as f:
+        file_path = Path("bot/bot_datas/data.json")
+        with file_path.open(encoding="utf-8") as f:
             data = json.load(f)
 
         # utworzenie slownika gdzie do slow na ktore ma reagowac jest przypisana odpowiedz  # noqa: E501
@@ -200,20 +205,22 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
         """
         if not any(inter == interaction for inter in data):
             data.append(interaction)
-            with Path.open("bot/bot_datas/data.json", "w", encoding="utf-8") as f:
+            file_path = Path("bot/bot_datas/data.json")
+            with file_path.open(mode="w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
             await message.channel.send("dobra zapamiętałem")
         else:
             await message.channel.send("juz wiem co mam na to odpowiedziec")
 
-    """po napisaniu ej i slowa z listy bot_name_list a nastepnie dowolnych slow bot
+    """po napisaniu ej i slowa z listy bot_names_list a nastepnie dowolnych slow bot
     sprawdzi czy umie na nie odpowiedziec jesli nie to poinformuje nas o tym jesli
     tak to odpowie namflaga czy_jest sprawdza czy takie slowo jest w bazie
     """
     is_it = False
-    if any(message.content.lower().startswith(f"ej {i}") for i in bot_name_list):
+    if any(message.content.lower().startswith(f"ej {i}") for i in bot_names_list):
         instruction = message.content[10:]
-        with Path.open("bot/bot_datas/data.json", "r", encoding="utf-8") as f:
+        file_path = Path("bot/bot_datas/data.json")
+        with file_path.open(mode="r", encoding="utf-8") as f:
             learn = json.load(f)
         for lrn in learn:
             if instruction in lrn:
@@ -224,17 +231,18 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
             await message.channel.send("nie umiem nic takiego ale mozesz mnie nauczyc")
 
     """fragment ktory umozliwa oduczcenia czegos bota
-    po napisaniu slowa z bot_name_list i napisaniu zapomnij o usuwa klucz ze swojej bazy
+    po napisaniu slowa z bot_names_list i napisaniu zapomnij o usuwa klucz ze swojej bazy
     i informuje nas ze o tym zapomina
     jesli nie ma takiego klucza poinformuje nas o tym
     gdy kazemu mu zapomniec o jakims slowie nie bedzie juz na nie reagowal
     flaga bylo sprawdza czy takie slowo bylo w bazie"""
     was = False
     if message.content.lower().startswith(
-        tuple(f"{i} zapomnij o " for i in bot_name_list)
+        tuple(f"{i} zapomnij o " for i in bot_names_list)
     ):
         forget = message.content.lower().split("zapomnij o ")[1]
-        with Path.open("bot/bot_datas/data.json", encoding="utf-8") as f:
+        file_path = Path("bot/bot_datas/data.json")
+        with file_path.open(encoding="utf-8") as f:
             forgot = json.load(f)
         for frg in forgot:
             if forget in frg:
@@ -244,7 +252,8 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
         if was is False:
             await message.channel.send("ja nawet nic takiego nie umiem xD")
         # zapisuje zmienione dane lub pozostawia stare dane jesli nie mial takiego klucza  # noqa: E501
-        with Path.open("bot/bot_datas/data.json", "w", encoding="utf-8") as f:
+        file_path = Path("bot/bot_datas/data.json")
+        with file_path.open(mode="w", encoding="utf-8") as f:
             json.dump(forgot, f, ensure_ascii=False, indent=4)
 
     # obsluga muzyczna
@@ -260,7 +269,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
 
     # fragment ktory wylapuje wiadomosc na czacie ktora sie zaczyna od slowa z bot_name_
     # list i slowa wlacz
-    if message.content.lower().startswith(tuple(f"{i} wlacz " for i in bot_name_list)):
+    if message.content.lower().startswith(tuple(f"{i} wlacz " for i in bot_names_list)):
         # rozdzielenie powyzszej czesci i slow ktore zostaly wprowadzone
         song = message.content.lower().split("wlacz ")[1]
 
@@ -268,10 +277,10 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
         results = sp.search(q=song, limit=1, type="track")
 
         # sprawdza czy szukany rezultat istnieje
-        if len(results["tracks"]["items"]) > 0:
+        if results["tracks"]["items"]:  # type:ignore
             # pobiera utwor i pobiera jego identyfikator
-            track_uri = results["tracks"]["items"][0]["uri"]
-            audio_url = sp.track(track_uri)["preview_url"]
+            track_uri = results["tracks"]["items"][0]["uri"]  # type:ignore
+            audio_url = sp.track(track_uri)["preview_url"]  # type:ignore
 
             # informuje uzytkownika ze znalazlo piosenke
             if audio_url is not None:
@@ -302,32 +311,45 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     do potrzeb bota
        """
 
-    # po napisaniu slowa z listy bot_name_list i slow polec cos podobnego rozdziela
+    # po napisaniu slowa z listy bot_names_list i slow polec cos podobnego rozdziela
     # tekst aby jego druga czesc zawierala piosenke
     if message.content.lower().startswith(
-        tuple(f"{i} polec cos podobnego do " for i in bot_name_list)
+        tuple(f"{i} polec cos podobnego do " for i in bot_names_list)
     ):
         title = message.content.lower().split("polec cos podobnego do ")[1]
 
         # zapisuje piosenke  do pliku wynik.json
         file_path = Path("music_recomendation/datas/results/result.json")
-        with file_path.open(mode= "w", encoding="utf-8") as f:
+        with file_path.open(mode="w", encoding="utf-8") as f:
             json.dump(title, f, indent=2, ensure_ascii=False)
 
         # uruchamia aplikacje do pozyskania linku i parametrow utworu
-        subprocess.run(["python","-m", "music_recomendation.music_app.song_analize"])# noqa: S603, S607, E501
+        subprocess.run(
+            [  # noqa: S603, S607
+                "python",
+                "-m",
+                "music_recomendation.music_app.song_analize",
+            ]
+        )
 
         # jesli sie to powiedzie bot informuje na czacie ze mysli
         await message.channel.send("dobra mysle czaj")
 
         # uruchamia aplikacje z siecia neuronowa ktora przetwarza dane o utworze i
         # dobiera parametry aby dac podobny
-        subprocess.run(["python","-m", "music_recomendation.music_app.neural"])# noqa: S603, S607, E501
+        subprocess.run(
+            [  # noqa: S603, S607
+                "python",
+                "-m",
+                "music_recomendation.music_app.neural",
+            ]
+        )
 
         # pyta uzytkownika o wybranie gatunku muzycznego,
         # ktory chce otrzymac i wypisuje dostepne
         await message.channel.send("dobra a gatunek jaki chcesz miec? masz do wyboru:")
-        with Path.open("music_recomendation/datas/genres.txt") as f:
+        file_path = Path("music_recomendation/datas/genres.txt")
+        with file_path.open(mode="r") as f:
             for genre in f:
                 await message.channel.send(genre)
 
@@ -341,15 +363,22 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
         user_message = await bot.wait_for(
             "message", check=lambda m: m.author == message.author
         )
-        with Path.open("music_recomendation/datas/genre.json", "w") as f:
+        file_path = Path("music_recomendation/datas/genre.json")
+        with file_path.open(mode="w") as f:
             json.dump(user_message.content, f, indent=2, ensure_ascii=False)
 
         # uruchamia aplikacje ktora wysyla nowe dane do spotify i pobiera odpowiednie piosenki  # noqa: E501
-        subprocess.run(["python","-m", "music_recomendation.music_app.new_parameters"])  # noqa: S603, S607, E501
+        subprocess.run(
+            [
+                "python",
+                "-m",
+                "music_recomendation.music_app.new_parameters",
+            ]  # noqa: S603, S607, E501
+        )
 
         # odczytuje 3 najbardzije pasujace piosenki z wynik4.json i wyswietla na kanale
         file_path = Path("music_recomendation/datas/results/result4.json")
-        with file_path.open( encoding="utf-8") as f:
+        with file_path.open(encoding="utf-8") as f:
             recomendation = json.load(f)
             place = 1
         for recomend in recomendation:
@@ -367,7 +396,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     """
     if any(
         message.content.lower().startswith(f"{i} wyrzuc z serwera")
-        for i in bot_name_list
+        for i in bot_names_list
     ):
         kick = message.content.split()[4]
         member = message.guild.get_member_named(kick)
@@ -383,7 +412,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     """
     if any(
         message.content.lower().startswith(f"{i} wyrzuc z kanalu")
-        for i in bot_name_list
+        for i in bot_names_list
     ):
         kick = message.content.split()[4]
         member = message.guild.get_member_named(kick)
@@ -396,7 +425,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     """po napisaniu wycisz oraz nazwy uzytkownika uzytkownik jest wyciszany
     gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana pojawia
     sie wiadomosc ze bot go nie widzi"""
-    if any(message.content.lower().startswith(f"{i} wycisz") for i in bot_name_list):
+    if any(message.content.lower().startswith(f"{i} wycisz") for i in bot_names_list):
         mute = message.content.split()[2]
         member = message.guild.get_member_named(mute)
         if member:
@@ -410,7 +439,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     wiadomosc ze bot go nie widzi
     """
     if any(
-        message.content.lower().startswith(f"{i} wylacz dzwiek") for i in bot_name_list
+        message.content.lower().startswith(f"{i} wylacz dzwiek") for i in bot_names_list
     ):
         mute = message.content.split()[3]
         member = message.guild.get_member_named(mute)
@@ -425,7 +454,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     jest blednie wpisana pojawia sie wiadomosc ze bot go nie widzi
     """
     if any(
-        message.content.lower().startswith(f"{i} zmien nazwe") for i in bot_name_list
+        message.content.lower().startswith(f"{i} zmien nazwe") for i in bot_names_list
     ):
         name = message.content.split()[3]
         member = message.guild.get_member_named(name)
@@ -443,7 +472,7 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     i wykonuje polecenie gdy nie ma takiego uzytkownika lub nazwa jest blednie wpisana
     pojawia sie wiadomosc ze bot go nie widzi
     """
-    if any(message.content.lower().startswith(f"{i} przenies") for i in bot_name_list):
+    if any(message.content.lower().startswith(f"{i} przenies") for i in bot_names_list):
         move = message.content.split()[2]
         member = message.guild.get_member_named(move)
         if member:
@@ -472,4 +501,4 @@ async def on_message(message:Any) -> Any:  # noqa: C901, PLR0912, PLR0915
 
 # token bota, jest wymagany aby bot dzialal
 
-bot.run(bot_token)
+bot.run(bot_token)  # type: ignore

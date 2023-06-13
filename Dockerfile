@@ -1,18 +1,17 @@
 FROM python:3.11
 
+WORKDIR /bot
+
 RUN apt-get update && \
     apt-get install -y ffmpeg
 
-WORKDIR /bot
+COPY ./ .
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+ENV PYTHONPATH=${PYTHONPATH}:${PWD} 
+RUN pip3 install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry install
 
-COPY music_recomendation/ ./music_recomendation/
-COPY results/ ./results/
-COPY data.json ./
-COPY bot.py ./
+EXPOSE 3000
 
-EXPOSE 8000
-
-CMD [ "python", "./bot.py" ]
+CMD [ "python","-m", "bot.bot" ]

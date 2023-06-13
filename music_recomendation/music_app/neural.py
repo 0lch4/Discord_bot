@@ -3,6 +3,24 @@ import numpy as np
 import tensorflow as tf
 from pathlib import Path
 
+PARAMETERS = (
+    "tempo",
+    "valence",
+    "loudness",
+    "energy",
+    "time_signature",
+    "danceability",
+    "speechiness",
+    "mode",
+    "key",
+    "instrumentalness",
+    "popularity",
+)
+
+
+DIFFRENCE_LIMIT = (5, 0.1, 1, 0.1, 0, 0.1, 0.05, 0, 0, 0.01, 1)
+
+
 # pobiera dane z pliku json
 def neural() -> None:
     file_path = Path("music_recomendation/datas/results/result2.json")
@@ -14,62 +32,22 @@ def neural() -> None:
         "music_recomendation/neural_network/neural_network.h5"
     )
     # dane wejsciowe
-    X = np.array(
-        [
-            [
-                data["tempo"],
-                data["valence"],
-                data["loudness"],
-                data["energy"],
-                data["time_signature"],
-                data["danceability"],
-                data["speechiness"],
-                data["mode"],
-                data["key"],
-                data["instrumentalness"],
-                data["popularity"],
-            ]
-            for i in range(len(data))
-        ]
-    )
+    x = np.array([[data[key] for key in PARAMETERS] for _ in range(len(data))])
     # dane wyjsciowe maja byc zblizone do wejsciowych
-    Y = X.copy()
+    y = x.copy()
 
     # minimalna i maksymalna roznica wartosci
     min_vals = np.array(
         [
-            [
-                data["tempo"] - 5,
-                data["valence"] - 0.1,
-                data["loudness"] - 1,
-                data["energy"] - 0.1,
-                data["time_signature"],
-                data["danceability"] - 0.1,
-                data["speechiness"] - 0.05,
-                data["mode"] - 0,
-                data["key"] - 0,
-                data["instrumentalness"] - 0.01,
-                data["popularity"] - 1,
-            ]
-            for i in range(len(data))
+            [data[key] - offset for key, offset in zip(PARAMETERS, DIFFRENCE_LIMIT)]
+            for _ in range(len(data))
         ]
     )
+
     max_vals = np.array(
         [
-            [
-                data["tempo"] + 5,
-                data["valence"] + 0.1,
-                data["loudness"] + 1,
-                data["energy"] + 0.1,
-                data["time_signature"],
-                data["danceability"] + 0.1,
-                data["speechiness"] + 0.05,
-                data["mode"] + 0,
-                data["key"] + 0,
-                data["instrumentalness"] + 0.01,
-                data["popularity"] + 1,
-            ]
-            for i in range(len(data))
+            [data[key] + offset for key, offset in zip(PARAMETERS, DIFFRENCE_LIMIT)]
+            for _ in range(len(data))
         ]
     )
 
@@ -78,7 +56,7 @@ def neural() -> None:
     b = 1
     min_vals += 0.001
     max_vals -= 0.001
-    X_norm = ((X - min_vals) / (max_vals - min_vals)) * (b - a) + a
+    x_norm = ((x - min_vals) / (max_vals - min_vals)) * (b - a) + a
 
     # przetwarzanie danych i trening na nowych danych
     model = tf.keras.models.Sequential(
@@ -92,7 +70,7 @@ def neural() -> None:
 
     model.compile(optimizer="adam", loss="mean_squared_error")
 
-    model.fit(X_norm, Y, epochs=120, batch_size=16)
+    model.fit(x_norm, y, epochs=120, batch_size=16)
 
     # nadpisanie modelu po kolejnej przetworzonej piosence dzieki
     # temu uczy sie z kazdym uzyciem
@@ -100,28 +78,19 @@ def neural() -> None:
 
     # wyciagniecie i zapisanie nowych danych piosenki
     results = []
-    for i in range(len(X)):
-        prediction = model.predict(X_norm[i].reshape(1, 11))
+    for _ in range(len(x)):
+        prediction = model.predict(x_norm[_].reshape(1, 11))
         results.append(prediction.tolist()[0])
 
-
     results_dict = {
-        "tempo": round(np.mean([result[0] for result in results]), 3),
-        "valence": round(np.mean([result[1] for result in results]), 3),
-        "loudness": round(np.mean([result[2] for result in results]), 3),
-        "energy": round(np.mean([result[3] for result in results]), 3),
-        "time_signature": int(round(np.mean([result[4] for result in results]), 0)),
-        "danceability": int(round(np.mean([result[5] for result in results]), 0)),
-        "speechiness": int(round(np.mean([result[6] for result in results]), 0)),
-        "mode": int(round(np.mean([result[7] for result in results]), 0)),
-        "key": int(round(np.mean([result[8] for result in results]), 0)),
-        "instrumentalness": int(round(np.mean([result[9] for result in results]), 0)),
-        "popularity": int(round(np.mean([result[10] for result in results]), 0)),
+        key: round(np.mean([r[i] for r in results]), None if i > 3 else 3)
+        for i, key in enumerate(PARAMETERS)
     }
 
     file_path = Path("music_recomendation/datas/results/result3.json")
     with file_path.open(mode="w") as f:
         json.dump(results_dict, f, indent=2, ensure_ascii=False)
 
-if __name__ =="__main__":
+
+if __name__ == "__main__":
     neural()
