@@ -33,7 +33,7 @@ Aplikacja działa na licencji MIT
 ## Kopiowanie repozytorium:
 
 ```
-git clone https://github.com/0lch4/Discord-bot.git
+git clone https://github.com/0lch4/Discord_bot.git
 ```
 
 ## Instalacja bibliotek:
