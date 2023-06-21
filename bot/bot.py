@@ -312,23 +312,28 @@ async def on_message(message: Any) -> Any:  # noqa: C901, PLR0912, PLR0915
        """
 
     # po napisaniu slowa z listy bot_names_list i slow polec cos podobnego rozdziela
-    # tekst aby jego druga czesc zawierala piosenke
+    # tekst aby jego druga czesc zawierala tytul
     if message.content.lower().startswith(
-        tuple(f"{i} polec cos podobnego do " for i in bot_names_list)
+        tuple(f"{i} polec cos podobnego do piosenki" for i in bot_names_list)
     ):
         title = message.content.lower().split("polec cos podobnego do ")[1]
 
-        # zapisuje piosenke  do pliku wynik.json
-        file_path = Path("music_recomendation/datas/results/result.json")
-        with file_path.open(mode="w", encoding="utf-8") as f:
-            json.dump(title, f, indent=2, ensure_ascii=False)
+        # nastepnie pyta o wykonawce
+        await message.channel.send("pewnie podaj mi jeszcze wykonawce")
 
-        # uruchamia aplikacje do pozyskania linku i parametrow utworu
+        artist = await bot.wait_for(
+        "message", check=lambda m: m.author == message.author
+        )
+
+        # uruchamia aplikacje do pozyskania linku i parametrow utworu,
+        # przekazuje jako argument wykonawce i tytul
         subprocess.run(
             [  # noqa: S603, S607
                 "python",
                 "-m",
                 "music_recomendation.music_app.song_analize",
+                title,
+                artist.content
             ]
         )
 
@@ -360,20 +365,19 @@ async def on_message(message: Any) -> Any:  # noqa: C901, PLR0912, PLR0915
 
         # zapisuje ostatnia wiadomosc uzytkownika do zmiennej i nastepnie
         # zapisuje ja do pliku gatunek.json
-        user_message = await bot.wait_for(
+        genre = await bot.wait_for(
             "message", check=lambda m: m.author == message.author
         )
-        file_path = Path("music_recomendation/datas/genre.json")
-        with file_path.open(mode="w") as f:
-            json.dump(user_message.content, f, indent=2, ensure_ascii=False)
 
-        # uruchamia aplikacje ktora wysyla nowe dane do spotify i pobiera odpowiednie piosenki  # noqa: E501
+        # uruchamia aplikacje ktora wysyla nowe dane do spotify i pobiera odpowiednie
+        # piosenki, przekazuje jako argument nazwe gatunku
         subprocess.run(
-            [
+            [  # noqa: S607, S603
                 "python",
                 "-m",
                 "music_recomendation.music_app.new_parameters",
-            ]  # noqa: S603, S607, E501
+                genre.content
+            ]
         )
 
         # odczytuje 3 najbardzije pasujace piosenki z wynik4.json i wyswietla na kanale

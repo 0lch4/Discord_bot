@@ -1,19 +1,16 @@
 import requests
 import json
 from pathlib import Path
+import sys
 from music_recomendation.connection.connection import conn
 
 
 def new_song() -> None | str:
+    genre = sys.argv[1].lower()
     response = conn()
     if response.status_code != 200:
         return f"Błąd {response.status_code}: {response.reason}"
     access_token = response.json()["access_token"]
-    # laduje wybrany gatunek
-    file_path = Path("music_recomendation/datas/genre.json")
-    with file_path.open(mode="r") as f:
-        genre = json.load(f)
-    genre = genre.lower()
     # laduje nowe dane utworu
     file_path = Path("music_recomendation/datas/results/result3.json")
     with file_path.open(mode="r") as f:
