@@ -8,9 +8,9 @@ PARAMETERS = (
     "valence",
     "loudness",
     "energy",
-    "time_signature",
     "danceability",
     "speechiness",
+    "time_signature",
     "mode",
     "key",
     "instrumentalness",
@@ -83,7 +83,7 @@ def neural() -> None:
         results.append(prediction.tolist()[0])
 
     results_dict = {
-        key: round(np.mean([r[i] for r in results]), None if i > 3 else 3)
+        key: round(np.mean([r[i] for r in results]), None if i > 5 else 3)
         for i, key in enumerate(PARAMETERS)
     }
 

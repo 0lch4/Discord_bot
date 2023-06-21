@@ -17,14 +17,14 @@ def new_song() -> None | str:
         new_data = json.load(f)
     # przypisuje wlasciwosci piosenki do zmiennych
     tempo = new_data["tempo"]
-    loudness = new_data["loudness"]
     valence = new_data["valence"]
+    loudness = new_data["loudness"]
     energy = new_data["energy"]
+    danceability = new_data["danceability"]
+    speechiness = new_data["speechiness"]
     time_signature = new_data["time_signature"]
     mode = new_data["mode"]
     key = new_data["key"]
-    danceability = new_data["danceability"]
-    speechiness = new_data["speechiness"]
     instrumentalness = new_data["instrumentalness"]
     popularity = new_data["popularity"]
 

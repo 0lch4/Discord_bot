@@ -100,7 +100,7 @@ nauka: nazwa bota, ' czas na nauke'
 rozmowa z botem na podstawie wyuczoncych rzeczy: 'ej ', nazwa bota, polecenie
 oduczenie nauczonej rzeczy: nazwa bota, 'zapomnij o ' nazwa rzeczy na ktora reaguje
 wlaczenie muzyki ze spotify: nazwa bota, 'wlacz ',nazwa piosenki
-polecenie muzyki ze spotify: nazwa bota, 'polec cos podobnego do ', nazwa piosenki
+polecenie muzyki ze spotify: nazwa bota, 'polec cos podobnego do ', tytul piosenki, czekanie na odpowiedz bota, wykonawca
 wyrzucenie z serwera: nazwa bota, 'wyrzuc z serwera ', nazwa uzytkownika
 wyrzucenie z kanalu: nazwa bota, 'wyrzuc z kanalu ', nazwa uzytkownika
 wycieszenie: nazwa bota, 'wycisz ', nazwa uzytkownika
@@ -314,7 +314,7 @@ async def on_message(message: Any) -> Any:  # noqa: C901, PLR0912, PLR0915
     # po napisaniu slowa z listy bot_names_list i slow polec cos podobnego rozdziela
     # tekst aby jego druga czesc zawierala tytul
     if message.content.lower().startswith(
-        tuple(f"{i} polec cos podobnego do piosenki" for i in bot_names_list)
+        tuple(f"{i} polec cos podobnego do " for i in bot_names_list)
     ):
         title = message.content.lower().split("polec cos podobnego do ")[1]
 
