@@ -64,9 +64,8 @@ def new_song() -> None | str:
     # sprawdza czy taka piosenka istnieje
     if not wyniki:
         return "No matching results"
-    place = 1
     tracks_info = []
-    for track in wyniki:
+    for place, track in enumerate(wyniki, 1):
         track_info = {
             "miejsce": place,
             "utwór": track["name"],
@@ -74,7 +73,6 @@ def new_song() -> None | str:
             "link": track["external_urls"]["spotify"],
         }
         tracks_info.append(track_info)
-        place += 1
         # zapisuje do pliku wynik4.json
     file_path = Path("music_recomendation/datas/results/result4.json")
     with file_path.open(mode="w", encoding="utf-8") as f:

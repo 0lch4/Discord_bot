@@ -1,4 +1,4 @@
-# Discord bot ![GitHub forks](https://img.shields.io/badge/Version-1.1.1-red)
+# Discord bot ![GitHub forks](https://img.shields.io/badge/Version-1.2.0-red)
 
 Interface in Polish lang
 
@@ -20,6 +20,7 @@ Bot na Discorda, posiada on:
 
 -możliwość podania aktualnej pogody w podanym mieście
 
+-możliwość opowiedzenia ciekawostki
 
 ## Komendy można zobaczyć wpisując !pomocy
 
