@@ -1,1 +1,1 @@
-alternative, anime, black-metal, blues, chill, classical, country, dance, deep-house, disco, dubstep, electro, electronic, hardcore, reggae, rock, samba, punk, synth-pop, techno, hip-hop, house, indie, jazz, metal
+alternative, anime, black-metal, blues, chill, classical, country, dance, deep-house, disco, dubstep, electro, electronic, hardcore, pop, reggae, rock, samba, punk, synth-pop,techno, hip-hop, house, indie, jazz, metal
